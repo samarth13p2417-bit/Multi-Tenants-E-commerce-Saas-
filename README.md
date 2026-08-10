@@ -185,5 +185,14 @@ npm run dev
 
 ---
 
+## 👥 Team & Contributors
+
+| Name | Role | GitHub Profile |
+| :--- | :--- | :--- |
+| **Samarth** | Full Stack & Cloud Architecture | [@samarth13p2417-bit](https://github.com/samarth13p2417-bit) |
+| **Amey Pattar** | Full Stack Development & UI Integration | [@Ameyop07](https://github.com/Ameyop07) |
+
+---
+
 ## 📄 License
 This project is private and maintained for the Multi-Tenants E-commerce SaaS platform.
