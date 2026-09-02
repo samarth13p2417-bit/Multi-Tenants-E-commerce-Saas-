@@ -1,5 +1,8 @@
 import express from 'express'
+import jwt from 'jsonwebtoken'
 import { enforceTenantIsolation } from '../middleware/tenantIsolation.js'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'OmniMarket_Super_Secret_JWT_Key_#2026_Enterprise_Secure_Hash'
 
 const router = express.Router()
 
@@ -245,6 +248,22 @@ router.put('/:id/price', (req, res) => {
     return res.status(404).json({ success: false, message: 'Product not found' })
   }
 
+  // Enforce Tenant Isolation for authenticated vendor
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      const token = req.headers.authorization.split(' ')[1]
+      const decoded = jwt.verify(token, JWT_SECRET)
+      if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access Denied: Cross-tenant product modification is strictly prohibited.',
+        })
+      }
+    } catch (e) {
+      return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+    }
+  }
+
   if (price !== undefined) product.price = Number(price)
   if (originalPrice !== undefined) product.originalPrice = Number(originalPrice)
 
@@ -262,6 +281,22 @@ router.put('/:id/stock', (req, res) => {
 
   if (!product) {
     return res.status(404).json({ success: false, message: 'Product not found' })
+  }
+
+  // Enforce Tenant Isolation for authenticated vendor
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      const token = req.headers.authorization.split(' ')[1]
+      const decoded = jwt.verify(token, JWT_SECRET)
+      if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access Denied: Cross-tenant product stock modification is strictly prohibited.',
+        })
+      }
+    } catch (e) {
+      return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+    }
   }
 
   if (stockCount !== undefined) {
@@ -284,12 +319,28 @@ router.put('/:id/stock', (req, res) => {
 
 // 5. Vendor Delete Product
 router.delete('/:id', (req, res) => {
-  const initialLen = productsCache.length
-  productsCache = productsCache.filter((p) => p.id !== req.params.id)
-
-  if (productsCache.length === initialLen) {
+  const product = productsCache.find((p) => p.id === req.params.id)
+  if (!product) {
     return res.status(404).json({ success: false, message: 'Product not found' })
   }
+
+  // Enforce Tenant Isolation for authenticated vendor
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      const token = req.headers.authorization.split(' ')[1]
+      const decoded = jwt.verify(token, JWT_SECRET)
+      if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access Denied: Cross-tenant product deletion is strictly prohibited.',
+        })
+      }
+    } catch (e) {
+      return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+    }
+  }
+
+  productsCache = productsCache.filter((p) => p.id !== req.params.id)
 
   res.json({
     success: true,

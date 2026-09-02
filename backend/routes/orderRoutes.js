@@ -1,5 +1,8 @@
 import express from 'express'
+import jwt from 'jsonwebtoken'
 import { sendOrderReceiptEmail } from '../services/emailService.js'
+
+const JWT_SECRET = process.env.JWT_SECRET || 'OmniMarket_Super_Secret_JWT_Key_#2026_Enterprise_Secure_Hash'
 
 const router = express.Router()
 
@@ -9,8 +12,8 @@ let ordersCache = [
     orderId: 'ORD-984210',
     tenantId: 'tenant-wow-momo',
     tenantName: 'Wow! Momo',
-    customerName: 'Shrutika Patil',
-    customerEmail: 'customer@omnimarket.io',
+    customerName: 'Samarth',
+    customerEmail: 'samarth13p2417@gmail.com',
     customerPhone: '9822012345',
     deliveryAddress: 'Flat 402, Royal Residency, Senapati Bapat Road, Pune',
     items: [
@@ -98,6 +101,25 @@ router.post('/', async (req, res) => {
 
 // 2. Get Orders for Specific Store (for Vendor Dashboard)
 router.get('/store/:storeId', (req, res) => {
+  // Enforce Tenant Isolation if authenticated as vendor
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      const token = req.headers.authorization.split(' ')[1]
+      const decoded = jwt.verify(token, JWT_SECRET)
+      if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== req.params.storeId) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access Denied: Cross-tenant order inspection is strictly forbidden.',
+        })
+      }
+    } catch (e) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid authorization session token.',
+      })
+    }
+  }
+
   const storeOrders = ordersCache.filter((o) => o.tenantId === req.params.storeId)
   res.json({
     success: true,
@@ -108,6 +130,25 @@ router.get('/store/:storeId', (req, res) => {
 
 // 3. Get All Platform Orders (for Super Admin)
 router.get('/', (req, res) => {
+  // Restrict global order overview if non-admin token provided
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      const token = req.headers.authorization.split(' ')[1]
+      const decoded = jwt.verify(token, JWT_SECRET)
+      if (decoded.role === 'customer') {
+        return res.status(403).json({
+          success: false,
+          message: 'Access Denied: Customer accounts cannot view master platform orders.',
+        })
+      }
+    } catch (e) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid authorization token.',
+      })
+    }
+  }
+
   res.json({
     success: true,
     count: ordersCache.length,
