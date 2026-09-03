@@ -1,50 +1,33 @@
 import React, { useState, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   updateProductPrice,
-  updateProductStock,
   updateProductStockDetails,
   addProduct,
   deleteProduct,
-  updateStoreProfile,
 } from '../features/marketplace/marketplaceSlice'
-import { logout } from '../features/auth/authSlice'
 import MarketplaceNavbar from '../components/MarketplaceNavbar'
 import CartDrawer from '../components/CartDrawer'
 import {
-  Store,
   Package,
   DollarSign,
   TrendingUp,
   AlertTriangle,
   Plus,
+  Minus,
   Trash2,
   Edit2,
   Check,
   X,
   ExternalLink,
   Eye,
-  LogOut,
-  Save,
   Search,
-  Filter,
   CheckCircle2,
-  Clock,
-  MapPin,
-  Tag,
-  ShoppingBag,
-  Sparkles,
-  Minus,
-  Layers,
   Boxes,
   ShieldCheck,
   BarChart3,
-  TrendingDown,
-  Calendar,
-  ChevronDown,
   LineChart as LineChartIcon,
-  Info,
 } from 'lucide-react'
 
 // =========================================================================
@@ -605,7 +588,6 @@ function StockLevelLineChart({ products }) {
 // =========================================================================
 export default function VendorDashboard() {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const { loggedInUser } = useSelector((state) => state.auth)
   const { tenants, products } = useSelector((state) => state.marketplace)
 

@@ -1,18 +1,12 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { registerStore } from '../features/marketplace/marketplaceSlice'
 import MarketplaceNavbar from '../components/MarketplaceNavbar'
 import CartDrawer from '../components/CartDrawer'
 import {
   Store,
-  Sparkles,
-  ShieldCheck,
-  Building2,
-  ArrowRight,
   CheckCircle2,
-  Upload,
-  Layers,
   Truck,
   DollarSign,
   Phone,
@@ -20,15 +14,11 @@ import {
   MapPin,
   Lock,
   ChevronLeft,
-  ShoppingBag,
-  Clock,
-  Star,
   Check,
 } from 'lucide-react'
 
 export default function RegisterStorePage() {
   const dispatch = useDispatch()
-  const navigate = useNavigate()
 
   // Form State
   const [formData, setFormData] = useState({

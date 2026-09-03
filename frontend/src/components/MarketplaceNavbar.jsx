@@ -15,13 +15,11 @@ import {
   ChevronDown,
   User,
   Shield,
-  Sparkles,
   ArrowRight,
   Menu,
   X,
   Building2,
   Package,
-  ExternalLink,
   Wallet,
 } from 'lucide-react'
 

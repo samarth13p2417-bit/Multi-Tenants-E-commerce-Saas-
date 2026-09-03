@@ -1,10 +1,8 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import {
   setSelectedTenant,
-  addToCart,
-  togglePocket,
 } from '../features/marketplace/marketplaceSlice'
 import MarketplaceNavbar from '../components/MarketplaceNavbar'
 import CartDrawer from '../components/CartDrawer'
@@ -15,51 +13,25 @@ import {
   Layers,
   Sparkles,
   ShieldCheck,
-  Building2,
   ArrowRight,
-  Shield,
-  Lock,
   CheckCircle2,
-  TrendingUp,
-  Tv,
-  Smartphone,
-  Shirt,
-  UtensilsCrossed,
-  Armchair,
-  ShoppingBasket,
-  Coffee,
-  ChevronRight,
   ShoppingBag,
-  Star,
-  Compass,
-  Bus,
-  Check,
   Zap,
-  Wallet,
-  Plus,
 } from 'lucide-react'
 
 export default function HomePage() {
   const dispatch = useDispatch()
-  const { tenants, products, selectedTenantId, pocketBalance } = useSelector(
+  const { tenants, products, selectedTenantId } = useSelector(
     (state) => state.marketplace
   )
 
-  const [activeCategoryFilter, setActiveCategoryFilter] = useState('all')
-
-  // Filtered tenants by selected tenantId or active category filter
+  // Filtered tenants by selected tenantId
   const displayedTenants = useMemo(() => {
-    let list = tenants
     if (selectedTenantId !== 'all') {
       return tenants.filter((t) => t.id === selectedTenantId)
     }
-    if (activeCategoryFilter !== 'all') {
-      return tenants.filter(
-        (t) => t.industryCategory === activeCategoryFilter || t.category?.toLowerCase().includes(activeCategoryFilter)
-      )
-    }
-    return list
-  }, [tenants, selectedTenantId, activeCategoryFilter])
+    return tenants
+  }, [tenants, selectedTenantId])
 
   // Featured Trending Products across all stores
   const featuredProducts = useMemo(() => {

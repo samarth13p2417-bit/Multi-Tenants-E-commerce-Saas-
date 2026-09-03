@@ -25,17 +25,14 @@ import {
   CreditCard,
   Clock,
   ExternalLink,
-  Receipt,
   MapPin,
   Check,
   Lock,
   Wallet,
-  Zap,
   Navigation,
   PhoneCall,
   PackageCheck,
-  CircleDot,
-  Share2,
+  Mail,
 } from 'lucide-react'
 
 // Razorpay Test API Credentials provided by user
@@ -565,6 +562,20 @@ export default function CartDrawer() {
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
                         className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">Email for Receipt</label>
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs">
+                      <Mail className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      <input
+                        type="email"
+                        value={customerEmail}
+                        onChange={(e) => setCustomerEmail(e.target.value)}
+                        placeholder="customer@omnimarket.io"
+                        className="w-full bg-transparent focus:outline-none font-medium text-gray-900"
                       />
                     </div>
                   </div>
