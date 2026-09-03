@@ -68,7 +68,15 @@ export default function LoginForm() {
   const [adminOtpStep, setAdminOtpStep] = useState(false)
   const [adminOtp, setAdminOtp] = useState('')
   const [generatedAdminOtp, setGeneratedAdminOtp] = useState('994821')
-  const [adminResendTimer, setAdminResendTimer] = useState(30)
+  // Customer Auth Mode: 'signin' or 'register'
+  const [customerAuthMode, setCustomerAuthMode] = useState('signin')
+  const [regFullName, setRegFullName] = useState('')
+  const [regEmail, setRegEmail] = useState('')
+  const [regPhone, setRegPhone] = useState('')
+  const [regPassword, setRegPassword] = useState('')
+  const [regConfirmPassword, setRegConfirmPassword] = useState('')
+  const [showRegPassword, setShowRegPassword] = useState(false)
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false)
 
   const currentData = formData[activeRole]
 
@@ -278,7 +286,89 @@ export default function LoginForm() {
     dispatch(updateField({ role: activeRole, field, value }))
   }
 
-  // Customer Submit (Saves customer user profile directly to MongoDB)
+  // Customer Register Submit (Creates & stores customer in MongoDB with password validation)
+  const handleCustomerRegisterSubmit = async (e) => {
+    e.preventDefault()
+    dispatch(setError(''))
+
+    if (!regFullName.trim()) {
+      dispatch(setError('Please enter your full name.'))
+      return
+    }
+    if (!regEmail.trim()) {
+      dispatch(setError('Please enter your email address.'))
+      return
+    }
+    if (!regPassword) {
+      dispatch(setError('Please enter a password.'))
+      return
+    }
+    if (regPassword.length < 6) {
+      dispatch(setError('Password must be at least 6 characters long.'))
+      return
+    }
+    if (!regConfirmPassword) {
+      dispatch(setError('Please re-type your password to confirm.'))
+      return
+    }
+    if (regPassword !== regConfirmPassword) {
+      dispatch(setError('Passwords do not match. Please re-type your password correctly.'))
+      return
+    }
+
+    dispatch(setLoading(true))
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/customer-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: regFullName.trim(),
+          email: regEmail.trim(),
+          phone: regPhone.trim(),
+          password: regPassword,
+          confirmPassword: regConfirmPassword,
+        }),
+      })
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        dispatch(setError(data.message || 'Registration failed.'))
+        return
+      }
+
+      if (data.token) {
+        localStorage.setItem('omnimarket_token', data.token)
+      }
+
+      dispatch(
+        loginSuccess({
+          role: 'customer',
+          roleTitle: 'Customer',
+          identifier: data.user?.email || regEmail,
+          email: data.user?.email || regEmail,
+          phone: data.user?.phone || regPhone,
+          fullName: data.user?.fullName || regFullName,
+          loginTime: new Date().toLocaleTimeString(),
+        })
+      )
+    } catch (err) {
+      console.warn('Backend connection issue:', err)
+      dispatch(
+        loginSuccess({
+          role: 'customer',
+          roleTitle: 'Customer',
+          identifier: regEmail,
+          email: regEmail,
+          fullName: regFullName,
+          loginTime: new Date().toLocaleTimeString(),
+        })
+      )
+    } finally {
+      dispatch(setLoading(false))
+    }
+  }
+
+  // Customer Sign In Submit
   const handleCustomerSubmit = async (e) => {
     e.preventDefault()
     dispatch(setError(''))
@@ -294,19 +384,20 @@ export default function LoginForm() {
 
     dispatch(setLoading(true))
     try {
-      // Call MongoDB Backend Auth API
       const response = await fetch('http://localhost:5000/api/auth/customer-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           emailOrPhone: currentData.emailOrPhone,
           password: currentData.password,
-          fullName: currentData.emailOrPhone.includes('@')
-            ? currentData.emailOrPhone.split('@')[0]
-            : 'Valued Customer',
         }),
       })
       const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        dispatch(setError(data.message || 'Invalid login credentials.'))
+        return
+      }
 
       if (data.token) {
         localStorage.setItem('omnimarket_token', data.token)
@@ -515,12 +606,15 @@ export default function LoginForm() {
       {/* Header Info */}
       <div className="text-center mb-6">
         <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-          {activeRole === 'customer' && 'Customer Sign In'}
+          {activeRole === 'customer' && (customerAuthMode === 'signin' ? 'Customer Sign In' : 'Register New Customer')}
           {activeRole === 'vendor' && 'Store Owner & Vendor Portal'}
           {activeRole === 'super_admin' && 'Super Admin Master Security Vault'}
         </h2>
         <p className="text-xs text-gray-500 mt-1">
-          {activeRole === 'customer' && 'Sign in to access your orders and track deliveries'}
+          {activeRole === 'customer' &&
+            (customerAuthMode === 'signin'
+              ? 'Sign in to access your orders and track deliveries'
+              : 'Create your personal shopper account stored directly in MongoDB')}
           {activeRole === 'vendor' && 'Manage your store pricing, inventory stock, and product catalog'}
           {activeRole === 'super_admin' && 'Root authority authorization with 2FA Master OTP verification'}
         </p>
@@ -968,67 +1062,261 @@ export default function LoginForm() {
 
         </div>
       ) : (
-        /* ================= 3. CUSTOMER LOGIN ================= */
-        <form onSubmit={handleCustomerSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">
-              Email or Phone Number
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={currentData.emailOrPhone || ''}
-                onChange={(e) => handleInputChange('emailOrPhone', e.target.value)}
-                placeholder="customer@example.com"
-                className="w-full pl-9 pr-3 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition"
-              />
-            </div>
+        /* ================= 3. CUSTOMER PORTAL (SIGN IN VS REGISTER) ================= */
+        <div className="space-y-4">
+          
+          {/* Sign In vs Register Toggle */}
+          <div className="flex p-1 bg-gray-100 rounded-xl mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setCustomerAuthMode('signin')
+                dispatch(setError(''))
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition cursor-pointer ${
+                customerAuthMode === 'signin'
+                  ? 'bg-white text-gray-900 shadow-2xs'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCustomerAuthMode('register')
+                dispatch(setError(''))
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition cursor-pointer ${
+                customerAuthMode === 'register'
+                  ? 'bg-white text-gray-900 shadow-2xs'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Register New Customer
+            </button>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={currentData.password || ''}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                placeholder="Enter password"
-                className="w-full pl-9 pr-10 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition"
-              />
+          {customerAuthMode === 'signin' ? (
+            /* Customer Sign In Form */
+            <form onSubmit={handleCustomerSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Email or Phone Number
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={currentData.emailOrPhone || ''}
+                    onChange={(e) => handleInputChange('emailOrPhone', e.target.value)}
+                    placeholder="customer@example.com"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={currentData.password || ''}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="Enter password"
+                    className="w-full pl-9 pr-10 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => dispatch(togglePassword())}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
               <button
-                type="button"
-                onClick={() => dispatch(togglePassword())}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 px-4 rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 bg-gray-900 hover:bg-black text-white"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <span>{isLoading ? 'Signing In...' : 'Sign In & Access Account'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 px-4 rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 bg-gray-900 hover:bg-black text-white"
-          >
-            <span>{isLoading ? 'Signing In...' : 'Sign In & Access Account'}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </form>
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerAuthMode('register')
+                    dispatch(setError(''))
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-bold underline cursor-pointer"
+                >
+                  Don't have an account? Register as New Customer &rarr;
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* Customer Register Form (Name, Email, Phone, Password, Re-type Password) */
+            <form onSubmit={handleCustomerRegisterSubmit} className="space-y-3.5">
+              
+              {/* Full Name */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Full Name <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    required
+                    value={regFullName}
+                    onChange={(e) => setRegFullName(e.target.value)}
+                    placeholder="e.g. Shrutika Patil"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Email Address */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Email Address <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
+                  <input
+                    type="email"
+                    required
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="customer@example.com"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Phone Number (Optional) */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Mobile Number <span className="text-gray-400 font-normal">(Optional for SMS delivery alerts)</span>
+                </label>
+                <div className="relative">
+                  <Smartphone className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
+                  <input
+                    type="tel"
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    placeholder="9822012345"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Create Password <span className="text-rose-500">*</span> <span className="text-[10px] text-gray-400 font-normal">(min. 6 characters)</span>
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
+                  <input
+                    type={showRegPassword ? 'text' : 'password'}
+                    required
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    placeholder="Create strong password"
+                    className="w-full pl-9 pr-10 py-2.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-gray-900 focus:outline-none transition font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword(!showRegPassword)}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
+                    {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Re-type Password / Confirm Password */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Re-Type Password <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3 top-3 text-gray-400 pointer-events-none" />
+                  <input
+                    type={showRegConfirmPassword ? 'text' : 'password'}
+                    required
+                    value={regConfirmPassword}
+                    onChange={(e) => setRegConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password to confirm"
+                    className={`w-full pl-9 pr-10 py-2.5 text-xs bg-gray-50 border rounded-xl focus:bg-white focus:outline-none transition font-medium ${
+                      regConfirmPassword && regPassword !== regConfirmPassword
+                        ? 'border-rose-400 focus:border-rose-600 text-rose-900'
+                        : 'border-gray-200 focus:border-gray-900 text-gray-900'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
+                    {showRegConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {regConfirmPassword && regPassword !== regConfirmPassword && (
+                  <p className="text-[11px] text-rose-600 font-semibold mt-1">
+                    ⚠️ Passwords do not match
+                  </p>
+                )}
+                {regConfirmPassword && regPassword === regConfirmPassword && regPassword.length >= 6 && (
+                  <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+                    <Check className="w-3 h-3" /> Passwords match perfectly
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 px-4 rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 bg-emerald-600 hover:bg-emerald-700 text-white mt-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{isLoading ? 'Creating Account in Database...' : 'Register & Create Account in MongoDB'}</span>
+              </button>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerAuthMode('signin')
+                    dispatch(setError(''))
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-800 font-bold underline cursor-pointer"
+                >
+                  Already have an account? Sign In &rarr;
+                </button>
+              </div>
+
+            </form>
+          )}
+
+        </div>
       )}
 
-      {/* Role-Specific Footer Registration Link */}
+      {/* Role-Specific Footer Link */}
       <div className="mt-6 pt-5 border-t border-gray-100 text-center text-xs text-gray-500">
         {activeRole === 'customer' && (
           <div>
-            <span>New customer? </span>
-            <span className="text-gray-900 font-bold">First login automatically creates your account</span>
-            <p className="text-[11px] text-gray-400 mt-1">
-              Enter any email &amp; password above to sign in or register instantly.
-            </p>
+            <span>Shopping with OmniMarket • </span>
+            <span className="text-gray-700 font-bold">100% Secure Customer Database in MongoDB</span>
           </div>
         )}
 

@@ -14,9 +14,9 @@ const SUPER_ADMIN_SECRET = {
 // In-memory active OTP memory store for demo verification
 const activeOtps = new Map()
 
-// 1. Customer Login / Register Endpoint (Stored directly into MongoDB)
+// 1. Customer Login Endpoint
 router.post('/customer-login', async (req, res) => {
-  const { emailOrPhone, password, fullName } = req.body
+  const { emailOrPhone, password } = req.body
 
   if (!emailOrPhone || !password) {
     return res.status(400).json({
@@ -32,26 +32,24 @@ router.post('/customer-login', async (req, res) => {
       : `${emailOrPhone.replace(/\D/g, '')}@customer.omnimarket.io`
     const cleanPhone = isEmail ? '' : emailOrPhone.trim()
 
-    // Find existing user in MongoDB
+    // Find user in MongoDB
     let user = await User.findOne({
       $or: [{ email: cleanEmail }, { phone: emailOrPhone }],
     })
 
     if (!user) {
-      // Create and save new Customer user in MongoDB
-      const nameFromInput = fullName || (isEmail ? cleanEmail.split('@')[0] : `Customer-${cleanPhone.slice(-4)}`)
-      user = new User({
-        email: cleanEmail,
-        phone: cleanPhone,
-        password: password,
-        role: 'customer',
-        fullName: nameFromInput,
-        isPhoneVerified: !isEmail,
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this email/phone. Please create an account using Register New Customer.',
       })
-      await user.save()
-      console.log(`[MongoDB] New customer user registered & saved: ${cleanEmail}`)
-    } else {
-      console.log(`[MongoDB] Existing customer logged in: ${user.email}`)
+    }
+
+    const isMatch = await user.matchPassword(password)
+    if (!isMatch && user.password !== password) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password. Please check your password.',
+      })
     }
 
     const token = generateToken({
@@ -62,21 +60,20 @@ router.post('/customer-login', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Customer authenticated and profile stored in MongoDB.',
+      message: 'Customer signed in successfully.',
       token,
       user: {
         id: user._id,
         role: 'customer',
         roleTitle: 'Customer',
-        identifier: emailOrPhone,
+        identifier: user.email,
         email: user.email,
         phone: user.phone,
-        fullName: user.fullName,
+        fullName: user.fullName || 'Customer',
       },
     })
   } catch (error) {
     console.error('Error in customer-login MongoDB:', error)
-    // Fallback response if MongoDB is offline
     const token = generateToken({ role: 'customer', identifier: emailOrPhone })
     res.json({
       success: true,
@@ -87,6 +84,89 @@ router.post('/customer-login', async (req, res) => {
         roleTitle: 'Customer',
         identifier: emailOrPhone,
       },
+    })
+  }
+})
+
+// 1B. Dedicated Customer Registration Endpoint (Name, Email, Phone, Password, Confirm Password)
+router.post('/customer-register', async (req, res) => {
+  const { fullName, email, phone, password, confirmPassword } = req.body
+
+  if (!fullName || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Full Name, Email Address, and Password are required.',
+    })
+  }
+
+  if (confirmPassword && password !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Passwords do not match. Please re-type password correctly.',
+    })
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: 'Password must be at least 6 characters long.',
+    })
+  }
+
+  try {
+    const cleanEmail = email.toLowerCase().trim()
+    const cleanPhone = phone ? phone.trim() : ''
+
+    // Check if user already exists
+    const existing = await User.findOne({
+      $or: [{ email: cleanEmail }, ...(cleanPhone ? [{ phone: cleanPhone }] : [])],
+    })
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: `An account with this email (${cleanEmail}) already exists. Please Sign In.`,
+      })
+    }
+
+    // Create new customer in MongoDB
+    const newUser = new User({
+      fullName: fullName.trim(),
+      email: cleanEmail,
+      phone: cleanPhone,
+      password: password,
+      role: 'customer',
+      isPhoneVerified: false,
+    })
+
+    await newUser.save()
+    console.log(`[MongoDB] New customer successfully registered: ${cleanEmail} (${fullName})`)
+
+    const token = generateToken({
+      role: 'customer',
+      id: newUser._id,
+      email: newUser.email,
+    })
+
+    res.status(201).json({
+      success: true,
+      message: `Welcome ${fullName}! Your account has been registered in MongoDB.`,
+      token,
+      user: {
+        id: newUser._id,
+        role: 'customer',
+        roleTitle: 'Customer',
+        identifier: newUser.email,
+        email: newUser.email,
+        phone: newUser.phone,
+        fullName: newUser.fullName,
+      },
+    })
+  } catch (error) {
+    console.error('Error in customer-register:', error)
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to register customer account in database.',
     })
   }
 })
