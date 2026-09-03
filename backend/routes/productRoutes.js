@@ -1,208 +1,47 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
+import { Product } from '../models/Product.js'
 import { enforceTenantIsolation } from '../middleware/tenantIsolation.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'OmniMarket_Super_Secret_JWT_Key_#2026_Enterprise_Secure_Hash'
+const JWT_SECRET = process.env.JWT_SECRET || 'OmniMarket_Super_Secret_JWT_Key_#2026'
 
 const router = express.Router()
 
-// Master In-Memory Products Cache
-let productsCache = [
-  // Wow! Momo Products
-  {
-    id: 'p-wow-1',
-    tenantId: 'tenant-wow-momo',
-    tenantName: 'Wow! Momo',
-    name: 'Steamed Darjeeling Veg & Cheese Momo Platter (8 Pcs + Spicy Dip)',
-    category: 'Momos & Platters',
-    price: 160.0,
-    originalPrice: 190.0,
-    stockCount: 25,
-    inStock: true,
-    rating: 4.9,
-    reviewsCount: 1840,
-    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&auto=format&fit=crop&q=80',
-    featured: true,
-    tag: 'Bestseller 🥟',
-  },
-  {
-    id: 'p-wow-2',
-    tenantId: 'tenant-wow-momo',
-    tenantName: 'Wow! Momo',
-    name: 'Pan-Fried Schezwan Paneer Momo in Hot Garlic Sauce (8 Pcs)',
-    category: 'Momos & Platters',
-    price: 190.0,
-    originalPrice: 230.0,
-    stockCount: 18,
-    inStock: true,
-    rating: 4.9,
-    reviewsCount: 1250,
-    image: 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=600&auto=format&fit=crop&q=80',
-    featured: true,
-    tag: 'Spicy Schezwan 🔥',
-  },
-  // Vijay Sales Products
-  {
-    id: 'p-vs-1',
-    tenantId: 'tenant-vijay-sales',
-    tenantName: 'Vijay Sales',
-    name: 'Sony BRAVIA 65-inch 4K Ultra HD Smart OLED Google TV (XR-65A80L)',
-    category: 'Smart TVs',
-    price: 189990.0,
-    originalPrice: 249990.0,
-    stockCount: 8,
-    inStock: true,
-    rating: 4.9,
-    reviewsCount: 640,
-    image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&auto=format&fit=crop&q=80',
-    featured: true,
-    tag: 'Flagship OLED ⚡',
-  },
-  {
-    id: 'p-vs-2',
-    tenantId: 'tenant-vijay-sales',
-    tenantName: 'Vijay Sales',
-    name: 'Daikin 1.5 Ton 5 Star Inverter Split AC (Copper, Triple Display)',
-    category: 'Air Conditioners',
-    price: 44990.0,
-    originalPrice: 56990.0,
-    stockCount: 14,
-    inStock: true,
-    rating: 4.8,
-    reviewsCount: 1120,
-    image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80',
-    featured: true,
-    tag: '5 Star Inverter ❄️',
-  },
-
-  // Poonam Dresses Products
-  {
-    id: 'pd-saree-01',
-    tenantId: 'tenant-poonam-dresses',
-    tenantName: 'Poonam Dresses',
-    name: 'Pure Silk Traditional Paithani Saree with Peacock Zari Pallu',
-    category: 'Sarees',
-    price: 3499.0,
-    originalPrice: 4599.0,
-    stockCount: 15,
-    inStock: true,
-    rating: 4.9,
-    reviewsCount: 380,
-    image: '/images/products/paithani_saree.jpg',
-    featured: true,
-    tag: 'Bestseller 🥻',
-  },
-  {
-    id: 'pd-ind-01',
-    tenantId: 'tenant-poonam-dresses',
-    tenantName: 'Poonam Dresses',
-    name: 'Designer Embroidered Anarkali Kurta, Pants & Dupatta Set',
-    category: 'Indian Dresses',
-    price: 1999.0,
-    originalPrice: 2799.0,
-    stockCount: 20,
-    inStock: true,
-    rating: 4.9,
-    reviewsCount: 310,
-    image: '/images/products/anarkali_dress.jpg',
-    featured: true,
-    tag: 'Trending Ethnic ✨',
-  },
-  {
-    id: 'pd-west-01',
-    tenantId: 'tenant-poonam-dresses',
-    tenantName: 'Poonam Dresses',
-    name: 'Elegant Satin Sleeveless Cocktail Bodycon Midi Dress',
-    category: 'Western Dresses',
-    price: 1699.0,
-    originalPrice: 2399.0,
-    stockCount: 18,
-    inStock: true,
-    rating: 4.9,
-    reviewsCount: 180,
-    image: '/images/products/satin_midi_dress.jpg',
-    featured: true,
-    tag: 'Party Glam 👗',
-  },
-  {
-    id: 'pd-crop-01',
-    tenantId: 'tenant-poonam-dresses',
-    tenantName: 'Poonam Dresses',
-    name: 'Smocked Off-Shoulder Puff Sleeve Ruffle Crop Top',
-    category: 'Crop Tops',
-    price: 699.0,
-    originalPrice: 999.0,
-    stockCount: 25,
-    inStock: true,
-    rating: 4.8,
-    reviewsCount: 280,
-    image: '/images/products/smocked_crop_top.jpg',
-    featured: true,
-    tag: 'Trending 👚',
-  },
-  {
-    id: 'pd-men-01',
-    tenantId: 'tenant-poonam-dresses',
-    tenantName: 'Poonam Dresses',
-    name: 'Mens Pure Linen Mandarin Collar Slim Fit Casual Shirt',
-    category: "Men's Clothes",
-    price: 1399.0,
-    originalPrice: 1999.0,
-    stockCount: 30,
-    inStock: true,
-    rating: 4.8,
-    reviewsCount: 310,
-    image: '/images/products/mens_linen_shirt.jpg',
-    featured: true,
-    tag: 'Pure Linen 👔',
-  },
-
-  // Rajgad Travels Products
-  {
-    id: 'p-rajgad-1',
-    tenantId: 'tenant-rajgad-travels',
-    tenantName: 'Rajgad Tours & Travels',
-    name: 'Pune to Goa Executive AC Multi-Axle Sleeper Bus (2+1 Luxury Berths)',
-    category: 'Intercity Bus Tickets',
-    price: 1250.0,
-    originalPrice: 1500.0,
-    stockCount: 22,
-    inStock: true,
-    rating: 4.9,
-    reviewsCount: 1680,
-    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80',
-    featured: true,
-    tag: 'Direct Volvo Sleeper 🚌',
-  },
-]
-
-// 1. Get Products (Filtered by TenantId or Category)
-router.get('/', enforceTenantIsolation, (req, res) => {
+// 1. Get Products (Directly from MongoDB with multi-tenant filtering)
+router.get('/', enforceTenantIsolation, async (req, res) => {
   const { tenantId, category, featured, search } = req.query
-  let result = productsCache
 
-  if (tenantId && tenantId !== 'all') {
-    result = result.filter((p) => p.tenantId === tenantId)
-  }
-  if (category && category !== 'all') {
-    result = result.filter((p) => p.category?.toLowerCase() === category.toLowerCase())
-  }
-  if (featured === 'true') {
-    result = result.filter((p) => p.featured)
-  }
-  if (search) {
-    result = result.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
-  }
+  try {
+    const query = {}
 
-  res.json({
-    success: true,
-    count: result.length,
-    products: result,
-  })
+    if (tenantId && tenantId !== 'all') {
+      query.tenantId = tenantId
+    }
+    if (category && category !== 'all') {
+      query.category = { $regex: category, $options: 'i' }
+    }
+    if (featured === 'true') {
+      query.featured = true
+    }
+    if (search) {
+      query.name = { $regex: search, $options: 'i' }
+    }
+
+    const products = await Product.find(query).sort({ featured: -1, rating: -1, createdAt: -1 })
+
+    res.json({
+      success: true,
+      count: products.length,
+      products,
+    })
+  } catch (error) {
+    console.error('Error querying products from MongoDB:', error)
+    res.status(500).json({ success: false, message: 'Failed to retrieve products from database.' })
+  }
 })
 
-// 2. Vendor Add Product
-router.post('/', enforceTenantIsolation, (req, res) => {
+// 2. Vendor Add Product to MongoDB
+router.post('/', enforceTenantIsolation, async (req, res) => {
   const { tenantId, tenantName, name, category, price, originalPrice, stockCount, inStock, image, tag } = req.body
 
   if (!name || !price || !tenantId) {
@@ -212,140 +51,164 @@ router.post('/', enforceTenantIsolation, (req, res) => {
     })
   }
 
-  const initialStock = stockCount !== undefined ? Number(stockCount) : 15
-  const newProduct = {
-    id: `prod-custom-${Date.now()}`,
-    tenantId,
-    tenantName: tenantName || 'Partner Store',
-    name,
-    category: category || 'General',
-    price: Number(price),
-    originalPrice: originalPrice ? Number(originalPrice) : undefined,
-    stockCount: initialStock,
-    inStock: inStock !== undefined ? inStock : initialStock > 0,
-    rating: 5.0,
-    reviewsCount: 1,
-    image: image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
-    tag: tag || 'New Launch',
-    featured: true,
+  try {
+    const initialStock = stockCount !== undefined ? Number(stockCount) : 15
+    const id = `prod-${tenantId}-${Date.now()}`
+
+    const newProduct = new Product({
+      id,
+      tenantId,
+      tenantName: tenantName || 'Partner Store',
+      name,
+      category: category || 'General',
+      price: Number(price),
+      originalPrice: originalPrice ? Number(originalPrice) : undefined,
+      stockCount: initialStock,
+      inStock: inStock !== undefined ? inStock : initialStock > 0,
+      rating: 5.0,
+      reviewsCount: 1,
+      image: image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
+      tag: tag || 'New Launch',
+      featured: true,
+    })
+
+    await newProduct.save()
+
+    res.status(201).json({
+      success: true,
+      message: `Product "${name}" saved to MongoDB catalog.`,
+      product: newProduct,
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
   }
-
-  productsCache.unshift(newProduct)
-
-  res.status(201).json({
-    success: true,
-    message: `Product "${name}" added to catalog.`,
-    product: newProduct,
-  })
 })
 
-// 3. Vendor Update Product Price
-router.put('/:id/price', (req, res) => {
+// 3. Vendor Update Product Price in MongoDB
+router.put('/:id/price', async (req, res) => {
   const { price, originalPrice } = req.body
-  const product = productsCache.find((p) => p.id === req.params.id)
 
-  if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found' })
-  }
+  try {
+    const product = await Product.findOne({ id: req.params.id })
 
-  // Enforce Tenant Isolation for authenticated vendor
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      const token = req.headers.authorization.split(' ')[1]
-      const decoded = jwt.verify(token, JWT_SECRET)
-      if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access Denied: Cross-tenant product modification is strictly prohibited.',
-        })
-      }
-    } catch (e) {
-      return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found in database' })
     }
+
+    // Enforce Tenant Isolation for authenticated vendor
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      try {
+        const token = req.headers.authorization.split(' ')[1]
+        const decoded = jwt.verify(token, JWT_SECRET)
+        if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Access Denied: Cross-tenant product modification is strictly prohibited.',
+          })
+        }
+      } catch (e) {
+        return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+      }
+    }
+
+    if (price !== undefined) product.price = Number(price)
+    if (originalPrice !== undefined) product.originalPrice = Number(originalPrice)
+
+    await product.save()
+
+    res.json({
+      success: true,
+      message: 'Product price updated in MongoDB.',
+      product,
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
   }
-
-  if (price !== undefined) product.price = Number(price)
-  if (originalPrice !== undefined) product.originalPrice = Number(originalPrice)
-
-  res.json({
-    success: true,
-    message: 'Product price updated.',
-    product,
-  })
 })
 
-// 4. Vendor Update Stock & Availability (Units Left / Out of Stock)
-router.put('/:id/stock', (req, res) => {
+// 4. Vendor Update Stock & Availability in MongoDB
+router.put('/:id/stock', async (req, res) => {
   const { stockCount, inStock } = req.body
-  const product = productsCache.find((p) => p.id === req.params.id)
 
-  if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found' })
-  }
+  try {
+    const product = await Product.findOne({ id: req.params.id })
 
-  // Enforce Tenant Isolation for authenticated vendor
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      const token = req.headers.authorization.split(' ')[1]
-      const decoded = jwt.verify(token, JWT_SECRET)
-      if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access Denied: Cross-tenant product stock modification is strictly prohibited.',
-        })
-      }
-    } catch (e) {
-      return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found in database' })
     }
-  }
 
-  if (stockCount !== undefined) {
-    product.stockCount = Math.max(0, Number(stockCount))
-    product.inStock = product.stockCount > 0
-  }
+    // Enforce Tenant Isolation for authenticated vendor
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      try {
+        const token = req.headers.authorization.split(' ')[1]
+        const decoded = jwt.verify(token, JWT_SECRET)
+        if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Access Denied: Cross-tenant product stock modification is strictly prohibited.',
+          })
+        }
+      } catch (e) {
+        return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+      }
+    }
 
-  if (inStock !== undefined) {
-    product.inStock = inStock
-    if (!inStock) product.stockCount = 0
-    else if (product.stockCount === 0) product.stockCount = 10
-  }
+    if (stockCount !== undefined) {
+      product.stockCount = Math.max(0, Number(stockCount))
+      product.inStock = product.stockCount > 0
+    }
 
-  res.json({
-    success: true,
-    message: `Stock updated: ${product.stockCount} units (${product.inStock ? 'In Stock' : 'Out of Stock'}).`,
-    product,
-  })
+    if (inStock !== undefined) {
+      product.inStock = inStock
+      if (!inStock) product.stockCount = 0
+      else if (product.stockCount === 0) product.stockCount = 10
+    }
+
+    await product.save()
+
+    res.json({
+      success: true,
+      message: `Stock updated in MongoDB: ${product.stockCount} units (${product.inStock ? 'In Stock' : 'Out of Stock'}).`,
+      product,
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
 })
 
-// 5. Vendor Delete Product
-router.delete('/:id', (req, res) => {
-  const product = productsCache.find((p) => p.id === req.params.id)
-  if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found' })
-  }
-
-  // Enforce Tenant Isolation for authenticated vendor
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      const token = req.headers.authorization.split(' ')[1]
-      const decoded = jwt.verify(token, JWT_SECRET)
-      if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access Denied: Cross-tenant product deletion is strictly prohibited.',
-        })
-      }
-    } catch (e) {
-      return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+// 5. Vendor Delete Product from MongoDB
+router.delete('/:id', async (req, res) => {
+  try {
+    const product = await Product.findOne({ id: req.params.id })
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found in database' })
     }
+
+    // Enforce Tenant Isolation for authenticated vendor
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      try {
+        const token = req.headers.authorization.split(' ')[1]
+        const decoded = jwt.verify(token, JWT_SECRET)
+        if (decoded.role === 'vendor' && decoded.storeId && decoded.storeId !== product.tenantId) {
+          return res.status(403).json({
+            success: false,
+            message: 'Access Denied: Cross-tenant product deletion is strictly prohibited.',
+          })
+        }
+      } catch (e) {
+        return res.status(401).json({ success: false, message: 'Invalid authorization token.' })
+      }
+    }
+
+    await Product.deleteOne({ id: req.params.id })
+
+    res.json({
+      success: true,
+      message: 'Product deleted from MongoDB catalog.',
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
   }
-
-  productsCache = productsCache.filter((p) => p.id !== req.params.id)
-
-  res.json({
-    success: true,
-    message: 'Product deleted from store catalog.',
-  })
 })
 
 export default router
