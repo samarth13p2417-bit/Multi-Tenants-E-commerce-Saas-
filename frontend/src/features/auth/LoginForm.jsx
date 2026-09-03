@@ -277,8 +277,8 @@ export default function LoginForm() {
     dispatch(updateField({ role: activeRole, field, value }))
   }
 
-  // Customer Submit
-  const handleCustomerSubmit = (e) => {
+  // Customer Submit (Saves customer user profile directly to MongoDB)
+  const handleCustomerSubmit = async (e) => {
     e.preventDefault()
     dispatch(setError(''))
 
@@ -292,7 +292,38 @@ export default function LoginForm() {
     }
 
     dispatch(setLoading(true))
-    setTimeout(() => {
+    try {
+      // Call MongoDB Backend Auth API
+      const response = await fetch('http://localhost:5000/api/auth/customer-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emailOrPhone: currentData.emailOrPhone,
+          password: currentData.password,
+          fullName: currentData.emailOrPhone.includes('@')
+            ? currentData.emailOrPhone.split('@')[0]
+            : 'Valued Customer',
+        }),
+      })
+      const data = await response.json()
+
+      if (data.token) {
+        localStorage.setItem('omnimarket_token', data.token)
+      }
+
+      dispatch(
+        loginSuccess({
+          role: 'customer',
+          roleTitle: 'Customer',
+          identifier: currentData.emailOrPhone,
+          email: data.user?.email || currentData.emailOrPhone,
+          phone: data.user?.phone || '',
+          fullName: data.user?.fullName || 'Customer',
+          loginTime: new Date().toLocaleTimeString(),
+        })
+      )
+    } catch (err) {
+      console.warn('Backend offline, using local state:', err)
       dispatch(
         loginSuccess({
           role: 'customer',
@@ -301,7 +332,9 @@ export default function LoginForm() {
           loginTime: new Date().toLocaleTimeString(),
         })
       )
-    }, 500)
+    } finally {
+      dispatch(setLoading(false))
+    }
   }
 
   // If logged in, show success state with dashboard links
