@@ -30,6 +30,7 @@ import {
   Check,
   KeyRound,
   ShieldAlert,
+  Plus,
 } from 'lucide-react'
 
 // Super Secret Master Credentials
@@ -769,6 +770,28 @@ export default function LoginForm() {
             )
           )}
 
+          {/* Add Your Store Digitally Section in Vendor Portal */}
+          <div className="pt-2">
+            <div className="p-3.5 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-left shadow-2xs">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 font-extrabold text-xs text-blue-950">
+                  <Store className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Are you a new merchant or restaurant?</span>
+                </div>
+                <p className="text-[11px] text-gray-600 leading-snug">
+                  List your business &amp; launch your digital storefront in 5 minutes.
+                </p>
+              </div>
+              <Link
+                to="/register-store"
+                className="w-full sm:w-auto px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-extrabold rounded-xl shadow-xs transition shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Your Store Digitally</span>
+              </Link>
+            </div>
+          </div>
+
         </div>
       ) : activeRole === 'super_admin' ? (
         /* ================= 2. SUPER ADMIN (SECRET CREDENTIALS + MASTER 2FA OTP) ================= */
@@ -997,12 +1020,32 @@ export default function LoginForm() {
         </form>
       )}
 
-      {/* Footer Registration Link */}
+      {/* Role-Specific Footer Registration Link */}
       <div className="mt-6 pt-5 border-t border-gray-100 text-center text-xs text-gray-500">
-        <span>Want to register a new store? </span>
-        <Link to="/register-store" className="text-blue-600 hover:text-blue-800 font-bold">
-          Open Your Store Digitally
-        </Link>
+        {activeRole === 'customer' && (
+          <div>
+            <span>New customer? </span>
+            <span className="text-gray-900 font-bold">First login automatically creates your account</span>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Enter any email &amp; password above to sign in or register instantly.
+            </p>
+          </div>
+        )}
+
+        {activeRole === 'vendor' && (
+          <div>
+            <span>Want to register a new store? </span>
+            <Link to="/register-store" className="text-blue-600 hover:text-blue-800 font-bold underline">
+              Add Your Store Digitally &rarr;
+            </Link>
+          </div>
+        )}
+
+        {activeRole === 'super_admin' && (
+          <div className="text-[11px] text-gray-400 font-mono">
+            🔒 Super Admin Master Portal • Multi-Tenant OmniMarket Engine
+          </div>
+        )}
       </div>
 
     </div>
