@@ -45,16 +45,30 @@ const SUPER_ADMIN_SECRET = {
 export default function LoginForm() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { activeRole, formData, showPassword, isLoading, loggedInUser, errorMessage } =
-    useSelector((state) => state.auth)
-  const { tenants } = useSelector((state) => state.marketplace)
+  const {
+    activeRole = 'customer',
+    formData = {},
+    showPassword = false,
+    isLoading = false,
+    loggedInUser = null,
+    errorMessage = '',
+  } = useSelector((state) => state?.auth || {})
+  const { tenants = [] } = useSelector((state) => state?.marketplace || {})
 
   // Vendor Login Mode: 'email_password' or 'phone_otp'
   const [vendorLoginMode, setVendorLoginMode] = useState('email_password')
-  const [vendorStoreId, setVendorStoreId] = useState(tenants[0]?.id || 'tenant-poonam-dresses')
-  const [vendorEmail, setVendorEmail] = useState(storeCredentials['tenant-poonam-dresses']?.email || 'poonam@dresses.com')
-  const [vendorPassword, setVendorPassword] = useState(storeCredentials['tenant-poonam-dresses']?.password || 'Poonam@2026')
-  const [vendorPhone, setVendorPhone] = useState(storeCredentials['tenant-poonam-dresses']?.phone || '9822012345')
+  const [vendorStoreId, setVendorStoreId] = useState(
+    tenants?.[0]?.id || 'tenant-poonam-dresses'
+  )
+  const [vendorEmail, setVendorEmail] = useState(
+    storeCredentials['tenant-poonam-dresses']?.email || 'poonam@dresses.com'
+  )
+  const [vendorPassword, setVendorPassword] = useState(
+    storeCredentials['tenant-poonam-dresses']?.password || 'Poonam@2026'
+  )
+  const [vendorPhone, setVendorPhone] = useState(
+    storeCredentials['tenant-poonam-dresses']?.phone || '9822012345'
+  )
   
   // Vendor OTP state
   const [otpStep, setOtpStep] = useState(false)
@@ -81,7 +95,10 @@ export default function LoginForm() {
   const [showRegPassword, setShowRegPassword] = useState(false)
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false)
 
-  const currentData = formData[activeRole]
+  const currentData = (formData && formData[activeRole]) || {
+    emailOrPhone: '',
+    password: '',
+  }
 
   // When store changes, update default credentials for that store
   const handleStoreSelect = (storeId) => {
@@ -632,7 +649,7 @@ export default function LoginForm() {
                 onChange={(e) => handleStoreSelect(e.target.value)}
                 className="w-full pl-9 pr-3 py-2.5 text-xs font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-600 focus:outline-none transition cursor-pointer"
               >
-                {tenants.map((t) => (
+                {tenants?.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name} ({t.category})
                   </option>
