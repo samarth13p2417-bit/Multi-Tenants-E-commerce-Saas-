@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   ShoppingBag,
   Zap,
+  Lock,
+  TrendingUp,
 } from 'lucide-react'
 
 export default function HomePage() {

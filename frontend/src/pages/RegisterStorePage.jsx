@@ -15,6 +15,10 @@ import {
   Lock,
   ChevronLeft,
   Check,
+  Star,
+  ArrowRight,
+  Sparkles,
+  Layers,
 } from 'lucide-react'
 
 export default function RegisterStorePage() {

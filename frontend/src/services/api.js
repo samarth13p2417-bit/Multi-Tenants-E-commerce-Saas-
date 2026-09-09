@@ -1,7 +1,7 @@
 // OmniMarket Central REST API Client
 // Connects React frontend to Node.js / Express backend (http://localhost:5000/api)
 
-const API_BASE_URL = 'http://localhost:5000/api'
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || '/api'
 
 class ApiService {
   constructor() {
@@ -48,6 +48,13 @@ class ApiService {
   }
 
   // Auth APIs
+  async customerRegister(userData) {
+    return this.request('/auth/customer-register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    })
+  }
+
   async customerLogin(emailOrPhone, password) {
     return this.request('/auth/customer-login', {
       method: 'POST',

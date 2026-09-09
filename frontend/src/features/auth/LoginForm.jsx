@@ -11,6 +11,7 @@ import {
   logout,
 } from './authSlice'
 import { storeCredentials } from '../../data/storeCredentials'
+import api from '../../services/api'
 import {
   User,
   Store,
@@ -68,6 +69,8 @@ export default function LoginForm() {
   const [adminOtpStep, setAdminOtpStep] = useState(false)
   const [adminOtp, setAdminOtp] = useState('')
   const [generatedAdminOtp, setGeneratedAdminOtp] = useState('994821')
+  const [adminResendTimer, setAdminResendTimer] = useState(30)
+  
   // Customer Auth Mode: 'signin' or 'register'
   const [customerAuthMode, setCustomerAuthMode] = useState('signin')
   const [regFullName, setRegFullName] = useState('')
@@ -318,26 +321,21 @@ export default function LoginForm() {
 
     dispatch(setLoading(true))
     try {
-      const response = await fetch('http://localhost:5000/api/auth/customer-register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: regFullName.trim(),
-          email: regEmail.trim(),
-          phone: regPhone.trim(),
-          password: regPassword,
-          confirmPassword: regConfirmPassword,
-        }),
+      const data = await api.customerRegister({
+        fullName: regFullName.trim(),
+        email: regEmail.trim(),
+        phone: regPhone.trim(),
+        password: regPassword,
+        confirmPassword: regConfirmPassword,
       })
-      const data = await response.json()
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         dispatch(setError(data.message || 'Registration failed.'))
         return
       }
 
       if (data.token) {
-        localStorage.setItem('omnimarket_token', data.token)
+        api.setToken(data.token)
       }
 
       dispatch(
@@ -384,23 +382,15 @@ export default function LoginForm() {
 
     dispatch(setLoading(true))
     try {
-      const response = await fetch('http://localhost:5000/api/auth/customer-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          emailOrPhone: currentData.emailOrPhone,
-          password: currentData.password,
-        }),
-      })
-      const data = await response.json()
+      const data = await api.customerLogin(currentData.emailOrPhone, currentData.password)
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         dispatch(setError(data.message || 'Invalid login credentials.'))
         return
       }
 
       if (data.token) {
-        localStorage.setItem('omnimarket_token', data.token)
+        api.setToken(data.token)
       }
 
       dispatch(

@@ -27,6 +27,7 @@ import {
   X,
   MessageCircle,
   Check,
+  ChevronRight,
 } from 'lucide-react'
 
 export default function StorePage() {
