@@ -1,7 +1,12 @@
 // OmniMarket Central REST API Client
 // Connects React frontend to Node.js / Express backend (http://localhost:5000/api)
 
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || '/api'
+const API_BASE_URL =
+  import.meta.env?.VITE_API_BASE_URL ||
+  (typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000/api'
+    : 'https://multi-tenants-e-commerce-saas.onrender.com/api')
 
 class ApiService {
   constructor() {
@@ -39,7 +44,13 @@ class ApiService {
 
     try {
       const response = await fetch(url, config)
-      const data = await response.json()
+      const text = await response.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch {
+        data = { success: response.ok, message: text || 'Server response' }
+      }
       return data
     } catch (error) {
       console.warn(`[API Client Warning]: ${endpoint} -> ${error.message}. Operating in resilient local mode.`)
