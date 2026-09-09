@@ -1,0 +1,109 @@
+name: OmniMarket CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # ==========================================
+  # 1. FRONTEND CI (Build & Lint Validation)
+  # ==========================================
+  frontend-ci:
+    name: 🎨 Frontend Validation & Build (Vercel Ready)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚡ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: 📦 Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci || npm install
+
+      - name: 🏗️ Test Production Build
+        working-directory: ./frontend
+        run: npm run build
+
+  # ==========================================
+  # 2. BACKEND CI (Syntax & Engine Validation)
+  # ==========================================
+  backend-ci:
+    name: ⚙️ Backend Validation (Render Ready)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚡ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: 📦 Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci || npm install
+
+      - name: 🔍 Validate Server Syntax
+        working-directory: ./backend
+        run: node --check server.js
+
+  # ==========================================
+  # 3. AUTOMATED RENDER BACKEND DEPLOYMENT
+  # ==========================================
+  deploy-render:
+    name: 🚀 Deploy Backend to Render
+    needs: [backend-ci]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📡 Trigger Render Deploy Hook (if configured)
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_HOOK" ]; then
+            echo "🚀 Triggering Render backend automated deployment hook..."
+            curl -s -X POST "$RENDER_HOOK"
+            echo "✅ Render deployment signal dispatched successfully!"
+          else
+            echo "ℹ️ RENDER_DEPLOY_HOOK_URL secret not set. Render will use automated GitHub Push Sync if connected."
+          fi
+
+  # ==========================================
+  # 4. AUTOMATED VERCEL FRONTEND DEPLOYMENT
+  # ==========================================
+  deploy-vercel:
+    name: 🚀 Deploy Frontend to Vercel
+    needs: [frontend-ci]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy to Vercel (if secrets configured)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "⚡ Deploying Frontend to Vercel via CLI..."
+            npx vercel --prod --token="$VERCEL_TOKEN" --yes
+          else
+            echo "ℹ️ VERCEL_TOKEN secret not set. Vercel will auto-deploy via GitHub Git Integration if linked."
+          fi
