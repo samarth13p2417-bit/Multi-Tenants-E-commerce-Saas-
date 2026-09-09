@@ -106,12 +106,16 @@ export default function PocketModal() {
       const rzp = new window.Razorpay(options)
       rzp.on('payment.failed', function (response) {
         setIsProcessing(false)
-        alert(`Top-up failed: ${response.error.description || 'Declined'}`)
+        alert(`Top-up failed: ${response.error?.description || 'Declined'}`)
       })
       rzp.open()
+      setTimeout(() => {
+        setIsProcessing(false)
+      }, 1200)
     } catch (e) {
       setIsProcessing(false)
       console.error(e)
+      alert('Could not initialize Razorpay top-up.')
     }
   }
 

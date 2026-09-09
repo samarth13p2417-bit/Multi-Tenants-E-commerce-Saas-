@@ -173,12 +173,17 @@ export default function CartDrawer() {
       const rzp = new window.Razorpay(options)
       rzp.on('payment.failed', function (response) {
         setIsProcessingRazorpay(false)
-        alert(`Payment Failed: ${response.error.description || 'Transaction declined'}`)
+        alert(`Payment Failed: ${response.error?.description || 'Transaction declined'}`)
       })
       rzp.open()
+      // Reset loading state shortly after opening so button is never permanently stuck
+      setTimeout(() => {
+        setIsProcessingRazorpay(false)
+      }, 1200)
     } catch (err) {
       setIsProcessingRazorpay(false)
       console.error('Razorpay initialization error:', err)
+      alert('Could not open Razorpay checkout. Please try again or use COD.')
     }
   }
 
