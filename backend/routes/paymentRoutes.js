@@ -31,7 +31,7 @@ router.post('/create-razorpay-order', async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_TVeMIEPx8WCIC1',
+      keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_TZuZATB0AWjiF6',
     })
   } catch (error) {
     console.error('[Razorpay Order Error]:', error)
@@ -47,7 +47,7 @@ router.post('/create-razorpay-order', async (req, res) => {
 router.post('/verify-razorpay-signature', (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
-    const secret = process.env.RAZORPAY_KEY_SECRET || 'U5v6sDbguMcNq5k6PD2Cn5na'
+    const secret = process.env.RAZORPAY_KEY_SECRET || 'fSddaHaXCy1SHtPR7zUVx9S9'
 
     const generatedSignature = crypto
       .createHmac('sha256', secret)

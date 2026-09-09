@@ -97,7 +97,7 @@ app.get('/api/health', (req, res) => {
     integrations: {
       razorpay: {
         status: 'READY',
-        keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_TVeMIEPx8WCIC1',
+        keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_TZuZATB0AWjiF6',
       },
       stripe: { status: 'READY' },
       cloudinary: { status: 'READY' },
@@ -139,7 +139,7 @@ const startServer = async () => {
     console.log(`=======================================================`)
     console.log(`🚀 OmniMarket Backend Engine Live on: http://localhost:${PORT}`)
     console.log(`🔒 Security: JWT + Bcrypt + Helmet + Tenant Data Scoping`)
-    console.log(`💳 Razorpay API Key: ${process.env.RAZORPAY_KEY_ID || 'rzp_test_TVeMIEPx8WCIC1'}`)
+    console.log(`💳 Razorpay API Key: ${process.env.RAZORPAY_KEY_ID || 'rzp_test_TZuZATB0AWjiF6'}`)
     console.log(`📊 Health Endpoint: http://localhost:${PORT}/api/health`)
     console.log(`=======================================================`)
   })

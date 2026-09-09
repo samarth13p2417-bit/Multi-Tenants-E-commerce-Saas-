@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 
 // Razorpay Test API Key
-const RAZORPAY_TEST_KEY_ID = 'rzp_test_TVeMIEPx8WCIC1'
+const RAZORPAY_TEST_KEY_ID = 'rzp_test_TZuZATB0AWjiF6'
 
 export default function PocketModal() {
   const dispatch = useDispatch()

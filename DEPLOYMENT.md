@@ -42,8 +42,8 @@ This guide explains how to deploy **OmniMarket Frontend on Vercel** and **Backen
    | `JWT_SECRET` | `YourSuperSecretProductionJWTKey2026` | Secure random key |
    | `JWT_EXPIRES_IN` | `7d` | Token expiry |
    | `FRONTEND_URL` | `https://your-app.vercel.app` | Vercel domain (for CORS) |
-   | `RAZORPAY_KEY_ID` | `rzp_test_...` | Razorpay Key |
-   | `RAZORPAY_KEY_SECRET`| `...` | Razorpay Secret |
+   | `RAZORPAY_KEY_ID` | `rzp_test_TZuZATB0AWjiF6` | Razorpay Test Key ID |
+   | `RAZORPAY_KEY_SECRET`| `fSddaHaXCy1SHtPR7zUVx9S9` | Razorpay Test Secret Key |
 
 5. Click **Create Web Service**.
 6. Once deployed, copy your Render URL (e.g., `https://omnimarket-backend.onrender.com`).
