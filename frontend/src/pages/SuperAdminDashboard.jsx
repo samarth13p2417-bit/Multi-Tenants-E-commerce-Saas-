@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { logout } from '../features/auth/authSlice'
 import MarketplaceNavbar from '../components/MarketplaceNavbar'
 import CartDrawer from '../components/CartDrawer'
+import SuperAdminAnalyticsCharts from '../components/SuperAdminAnalyticsCharts'
 import {
   ShieldCheck,
   Store,
@@ -73,6 +74,30 @@ export default function SuperAdminDashboard() {
   const totalProducts = products.length
   const totalInStockProducts = products.filter((p) => p.inStock).length
   const estimatedPlatformGMV = products.reduce((sum, p) => sum + p.price * 14, 0)
+
+  // Quick helper for table income/visits
+  const getStoreQuickStats = (t) => {
+    const storeProducts = products.filter((p) => p.tenantId === t.id)
+    const count = storeProducts.length || t.productsCount || 8
+    const reviews = t.reviewsCount || 420
+    const ind = t.industryCategory || t.industry || 'general'
+    
+    let ticketMult = ind === 'electronics' || ind === 'gadgets' ? 3.2 : ind === 'fashion' ? 1.4 : ind === 'travels' ? 2.5 : 1.0
+    let trafficMult = ind === 'restaurant' ? 1.8 : ind === 'fashion' ? 1.45 : 1.2
+
+    const visits = Math.max(3200, Math.round(reviews * 14.5 * trafficMult + count * 95))
+    const catalogSum = storeProducts.reduce((sum, p) => sum + (p.price || 500), 0)
+    const avgPrice = count > 0 ? catalogSum / count : 1200
+    const income = Math.max(250000, Math.round(visits * 0.045 * avgPrice * 0.42 * ticketMult))
+
+    return { visits, income }
+  }
+
+  const formatLakhs = (val) => {
+    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`
+    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`
+    return `₹${val.toLocaleString('en-IN')}`
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col justify-between selection:bg-gray-900 selection:text-white pb-12">
@@ -183,6 +208,9 @@ export default function SuperAdminDashboard() {
 
         </div>
 
+        {/* ================= STORE INCOME & CUSTOMER FOOTFALL ANALYTICS CHARTS ================= */}
+        <SuperAdminAnalyticsCharts tenants={tenants} products={products} />
+
         {/* ================= ALL STORES MANAGEMENT DIRECTORY ================= */}
         <div className="bg-white rounded-3xl border border-gray-200 shadow-xs overflow-hidden">
           
@@ -192,7 +220,7 @@ export default function SuperAdminDashboard() {
                 Partner Merchant &amp; Store Management Directory
               </h3>
               <p className="text-xs text-gray-500">
-                Inspect merchant credentials, regulate store activity, and preview storefronts.
+                Inspect merchant credentials, regulate store activity, and review store income &amp; footfall.
               </p>
             </div>
 
@@ -231,6 +259,8 @@ export default function SuperAdminDashboard() {
                 <tr>
                   <th className="py-3.5 px-4">Store Identity</th>
                   <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Est. Monthly Income</th>
+                  <th className="py-3.5 px-4">Customer Footfall</th>
                   <th className="py-3.5 px-4">Catalog Count</th>
                   <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4 text-right">Admin Actions</th>
@@ -240,6 +270,7 @@ export default function SuperAdminDashboard() {
                 {filteredStores.map((t) => {
                   const status = storeStatuses[t.id] || 'active'
                   const storeProdCount = products.filter((p) => p.tenantId === t.id).length
+                  const stats = getStoreQuickStats(t)
 
                   return (
                     <tr key={t.id} className="hover:bg-gray-50/80 transition">
@@ -261,6 +292,22 @@ export default function SuperAdminDashboard() {
                         <span className="px-2 py-0.5 rounded-full bg-gray-100 text-[11px] font-semibold">
                           {t.category}
                         </span>
+                      </td>
+
+                      {/* Store Income */}
+                      <td className="py-3 px-4">
+                        <div className="font-extrabold text-emerald-600 text-xs">
+                          {formatLakhs(stats.income)}
+                        </div>
+                        <div className="text-[10px] text-gray-400">Monthly GMV</div>
+                      </td>
+
+                      {/* Customer Footfall */}
+                      <td className="py-3 px-4">
+                        <div className="font-extrabold text-amber-600 text-xs">
+                          {stats.visits.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[10px] text-gray-400">Visits / mo</div>
                       </td>
 
                       <td className="py-3 px-4 font-bold text-gray-900">
@@ -320,3 +367,4 @@ export default function SuperAdminDashboard() {
     </div>
   )
 }
+

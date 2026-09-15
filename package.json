@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "npm run dev:all",
-    "dev:all": "npx concurrently -n \"FRONTEND,BACKEND\" -c \"cyan,magenta\" \"npm run dev --prefix frontend\" \"npm start --prefix backend\"",
+    "dev:all": "concurrently -n \"FRONTEND,BACKEND\" -c \"cyan,magenta\" \"npm run dev --prefix frontend\" \"npm start --prefix backend\"",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:backend": "npm start --prefix backend",
     "build:frontend": "npm run build --prefix frontend",
