@@ -23,13 +23,16 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
   const [displayCount, setDisplayCount] = useState(8)
   const [hoveredStore, setHoveredStore] = useState(null)
 
-  // 1. Compute realistic income and footfall for all partner stores
+  // 1. Compute realistic income and footfall for all partner stores safely
   const computedStoreAnalytics = useMemo(() => {
-    return tenants.map((tenant) => {
-      const storeProducts = products.filter((p) => p.tenantId === tenant.id)
+    const safeTenants = Array.isArray(tenants) ? tenants : []
+    const safeProducts = Array.isArray(products) ? products : []
+
+    return safeTenants.map((tenant) => {
+      const storeProducts = safeProducts.filter((p) => p && p.tenantId === tenant.id)
       const catalogCount = storeProducts.length || tenant.productsCount || 8
-      const rating = tenant.rating || 4.7
-      const reviews = tenant.reviewsCount || 420
+      const rating = Number(tenant.rating) || 4.7
+      const reviews = Number(tenant.reviewsCount) || 420
       const ind = tenant.industryCategory || tenant.industry || 'general'
 
       // Industry weight factors
@@ -54,7 +57,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
       }
 
       // Catalog valuation
-      const catalogSum = storeProducts.reduce((sum, p) => sum + (p.price || 500), 0)
+      const catalogSum = storeProducts.reduce((sum, p) => sum + (Number(p?.price) || 500), 0)
       const avgPrice = catalogCount > 0 ? catalogSum / catalogCount : 1200
 
       // Estimated Monthly Customer Visits (Footfall)
@@ -74,11 +77,11 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
       const monthlyIncome = Math.max(250000, calculatedRevenue)
 
       return {
-        id: tenant.id,
-        name: tenant.name,
+        id: tenant.id || `tenant-${Math.random()}`,
+        name: tenant.name || 'Partner Merchant',
         category: tenant.category || 'Retail Store',
         industry: ind,
-        logo: tenant.logo,
+        logo: tenant.logo || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=120&auto=format&fit=crop&q=80',
         address: tenant.address || 'Pune Commercial Area',
         rating,
         reviewsCount: reviews,
@@ -119,31 +122,35 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
 
   // Summary Metrics
   const topIncomeStore = useMemo(() => {
+    if (computedStoreAnalytics.length === 0) return null
     return [...computedStoreAnalytics].sort((a, b) => b.monthlyIncome - a.monthlyIncome)[0]
   }, [computedStoreAnalytics])
 
   const topVisitedStore = useMemo(() => {
+    if (computedStoreAnalytics.length === 0) return null
     return [...computedStoreAnalytics].sort((a, b) => b.customerVisits - a.customerVisits)[0]
   }, [computedStoreAnalytics])
 
   const totalPlatformIncome = useMemo(() => {
-    return computedStoreAnalytics.reduce((sum, s) => sum + s.monthlyIncome, 0)
+    return computedStoreAnalytics.reduce((sum, s) => sum + (s.monthlyIncome || 0), 0)
   }, [computedStoreAnalytics])
 
   const totalPlatformVisits = useMemo(() => {
-    return computedStoreAnalytics.reduce((sum, s) => sum + s.customerVisits, 0)
+    return computedStoreAnalytics.reduce((sum, s) => sum + (s.customerVisits || 0), 0)
   }, [computedStoreAnalytics])
 
   // Formatting helpers
-  const formatCurrency = (val) => {
-    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`
-    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`
-    return `₹${val.toLocaleString('en-IN')}`
+  const formatCurrency = (val = 0) => {
+    const num = Number(val) || 0
+    if (num >= 10000000) return `₹${(num / 10000000).toFixed(2)} Cr`
+    if (num >= 100000) return `₹${(num / 100000).toFixed(2)} L`
+    return `₹${num.toLocaleString('en-IN')}`
   }
 
-  const formatVisits = (val) => {
-    if (val >= 1000) return `${(val / 1000).toFixed(1)}k`
-    return val.toLocaleString('en-IN')
+  const formatVisits = (val = 0) => {
+    const num = Number(val) || 0
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
+    return num.toLocaleString('en-IN')
   }
 
   // Maximum values for normalization
@@ -185,7 +192,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
             </h2>
           </div>
           <p className="text-xs sm:text-sm text-gray-500">
-            Compare monthly gross revenue (₹) and customer traffic (store visits) across all 37 partner merchants
+            Compare monthly gross revenue (₹) and customer traffic (store visits) across all partner merchants
           </p>
         </div>
 
@@ -269,7 +276,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
               <span className="text-[10px] text-gray-500 font-normal"> /mo</span>
             </div>
             <div className="text-[11px] text-gray-500 mt-1">
-              {topIncomeStore?.category}
+              {topIncomeStore?.category || 'Retail'}
             </div>
           </div>
           {topIncomeStore?.logo && (
@@ -292,11 +299,11 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
               {topVisitedStore?.name || 'Popular Store'}
             </div>
             <div className="text-xl font-black text-amber-600 mt-0.5">
-              {topVisitedStore?.customerVisits.toLocaleString('en-IN')}
+              {formatVisits(topVisitedStore?.customerVisits || 0)}
               <span className="text-[10px] text-gray-500 font-normal"> visits/mo</span>
             </div>
             <div className="text-[11px] text-gray-500 mt-1">
-              {topVisitedStore?.category}
+              {topVisitedStore?.category || 'Retail'}
             </div>
           </div>
           {topVisitedStore?.logo && (
@@ -329,7 +336,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
             <span>Total Monthly Footfall</span>
           </div>
           <div className="text-xl font-black text-gray-900">
-            {totalPlatformVisits.toLocaleString('en-IN')}
+            {(totalPlatformVisits || 0).toLocaleString('en-IN')}
           </div>
           <div className="text-[11px] text-blue-600 font-semibold mt-1">
             Across {computedStoreAnalytics.length} partner stores
@@ -351,7 +358,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
             onChange={(e) => setIndustryFilter(e.target.value)}
             className="bg-white border border-gray-200 rounded-xl text-xs px-2.5 py-1.5 font-bold text-gray-700 focus:outline-none"
           >
-            <option value="all">All Industries ({tenants.length})</option>
+            <option value="all">All Industries ({tenants?.length || 0})</option>
             <option value="fashion">Fashion &amp; Garments</option>
             <option value="electronics">Electronics &amp; Appliances</option>
             <option value="gadgets">Mobiles &amp; Gadgets</option>
@@ -512,11 +519,11 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
                 const isHovered = hoveredStore?.id === store.id
 
                 // Heights
-                const incomePct = store.monthlyIncome / maxIncome
+                const incomePct = store.monthlyIncome / (maxIncome || 1)
                 const incomeBarHeight = Math.max(6, plotHeight * incomePct)
                 const incomeY = padTop + plotHeight - incomeBarHeight
 
-                const visitsPct = store.customerVisits / maxVisits
+                const visitsPct = store.customerVisits / (maxVisits || 1)
                 const visitsBarHeight = Math.max(6, plotHeight * visitsPct)
                 const visitsY = padTop + plotHeight - visitsBarHeight
 
@@ -532,7 +539,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
                 }
 
                 const shortName =
-                  store.name.length > 12 ? store.name.slice(0, 11) + '…' : store.name
+                  store.name && store.name.length > 12 ? store.name.slice(0, 11) + '…' : (store.name || 'Store')
 
                 return (
                   <g
@@ -603,7 +610,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
                       fontWeight="500"
                       fontFamily="sans-serif"
                     >
-                      {store.industry}
+                      {store.industry || 'store'}
                     </text>
                   </g>
                 )
@@ -644,7 +651,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
                 <div>
                   <div className="text-[11px] text-gray-400 uppercase font-bold">Customer Visits</div>
                   <div className="text-base font-black text-amber-400">
-                    {hoveredStore.customerVisits.toLocaleString('en-IN')}
+                    {formatVisits(hoveredStore.customerVisits || 0)}
                   </div>
                 </div>
 
@@ -702,11 +709,13 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
                       #{rankIdx + 1}
                     </span>
 
-                    <img
-                      src={store.logo}
-                      alt={store.name}
-                      className="w-10 h-10 rounded-xl object-cover border border-gray-200 shrink-0"
-                    />
+                    {store.logo && (
+                      <img
+                        src={store.logo}
+                        alt={store.name}
+                        className="w-10 h-10 rounded-xl object-cover border border-gray-200 shrink-0"
+                      />
+                    )}
 
                     <div className="min-w-0">
                       <div className="font-extrabold text-gray-900 text-sm truncate">{store.name}</div>
@@ -738,7 +747,7 @@ export default function SuperAdminAnalyticsCharts({ tenants = [], products = [] 
                       <div className="flex justify-between text-[11px] font-bold mb-1">
                         <span className="text-amber-700 flex items-center gap-1">
                           <Users className="w-3 h-3" />
-                          <span>Customer Visits: {store.customerVisits.toLocaleString('en-IN')}</span>
+                          <span>Customer Visits: {formatVisits(store.customerVisits || 0)}</span>
                         </span>
                         <span className="text-gray-500">{visitsRatio}% of peak</span>
                       </div>

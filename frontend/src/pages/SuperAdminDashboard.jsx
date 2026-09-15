@@ -32,15 +32,17 @@ import {
 export default function SuperAdminDashboard() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { loggedInUser } = useSelector((state) => state.auth)
-  const { tenants, products } = useSelector((state) => state.marketplace)
+  const { loggedInUser = null } = useSelector((state) => state?.auth || {})
+  const { tenants = [], products = [] } = useSelector((state) => state?.marketplace || {})
 
   // Status for each store (simulated store moderation)
   const [storeStatuses, setStoreStatuses] = useState(() => {
     const initial = {}
-    tenants.forEach((t) => {
-      initial[t.id] = 'active'
-    })
+    if (Array.isArray(tenants)) {
+      tenants.forEach((t) => {
+        if (t && t.id) initial[t.id] = 'active'
+      })
+    }
     return initial
   })
 
@@ -60,43 +62,47 @@ export default function SuperAdminDashboard() {
     showToast(`Store "${storeName}" is now ${next.toUpperCase()}`)
   }
 
-  // Filtered stores
+  // Filtered stores safely
   const filteredStores = useMemo(() => {
-    return tenants.filter((t) => {
-      if (searchTerm.trim() && !t.name.toLowerCase().includes(searchTerm.toLowerCase())) return false
-      if (categoryFilter !== 'all' && t.industry !== categoryFilter) return false
+    const safeTenants = Array.isArray(tenants) ? tenants : []
+    return safeTenants.filter((t) => {
+      if (!t) return false
+      if (searchTerm.trim() && !t.name?.toLowerCase().includes(searchTerm.toLowerCase())) return false
+      if (categoryFilter !== 'all' && t.industry !== categoryFilter && t.industryCategory !== categoryFilter) return false
       return true
     })
   }, [tenants, searchTerm, categoryFilter])
 
   // Total Platform Statistics
-  const totalStores = tenants.length
-  const totalProducts = products.length
-  const totalInStockProducts = products.filter((p) => p.inStock).length
-  const estimatedPlatformGMV = products.reduce((sum, p) => sum + p.price * 14, 0)
+  const totalStores = Array.isArray(tenants) ? tenants.length : 0
+  const totalProducts = Array.isArray(products) ? products.length : 0
+  const totalInStockProducts = (Array.isArray(products) ? products : []).filter((p) => p && p.inStock).length
+  const estimatedPlatformGMV = (Array.isArray(products) ? products : []).reduce((sum, p) => sum + (Number(p?.price) || 0) * 14, 0)
 
   // Quick helper for table income/visits
   const getStoreQuickStats = (t) => {
-    const storeProducts = products.filter((p) => p.tenantId === t.id)
+    if (!t) return { visits: 5000, income: 500000 }
+    const storeProducts = (Array.isArray(products) ? products : []).filter((p) => p && p.tenantId === t.id)
     const count = storeProducts.length || t.productsCount || 8
-    const reviews = t.reviewsCount || 420
+    const reviews = Number(t.reviewsCount) || 420
     const ind = t.industryCategory || t.industry || 'general'
     
     let ticketMult = ind === 'electronics' || ind === 'gadgets' ? 3.2 : ind === 'fashion' ? 1.4 : ind === 'travels' ? 2.5 : 1.0
     let trafficMult = ind === 'restaurant' ? 1.8 : ind === 'fashion' ? 1.45 : 1.2
 
     const visits = Math.max(3200, Math.round(reviews * 14.5 * trafficMult + count * 95))
-    const catalogSum = storeProducts.reduce((sum, p) => sum + (p.price || 500), 0)
+    const catalogSum = storeProducts.reduce((sum, p) => sum + (Number(p?.price) || 500), 0)
     const avgPrice = count > 0 ? catalogSum / count : 1200
     const income = Math.max(250000, Math.round(visits * 0.045 * avgPrice * 0.42 * ticketMult))
 
     return { visits, income }
   }
 
-  const formatLakhs = (val) => {
-    if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`
-    if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`
-    return `₹${val.toLocaleString('en-IN')}`
+  const formatLakhs = (val = 0) => {
+    const num = Number(val) || 0
+    if (num >= 10000000) return `₹${(num / 10000000).toFixed(2)} Cr`
+    if (num >= 100000) return `₹${(num / 100000).toFixed(2)} L`
+    return `₹${num.toLocaleString('en-IN')}`
   }
 
   return (
@@ -241,7 +247,7 @@ export default function SuperAdminDashboard() {
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="bg-white border border-gray-200 rounded-xl text-xs px-3 py-2 font-bold text-gray-700"
               >
-                <option value="all">All Industries ({tenants.length})</option>
+                <option value="all">All Industries ({totalStores})</option>
                 <option value="restaurant">Food &amp; Sweets</option>
                 <option value="fashion">Fashion &amp; Garments</option>
                 <option value="gadgets">Mobiles &amp; Gadgets</option>
@@ -269,7 +275,7 @@ export default function SuperAdminDashboard() {
               <tbody className="divide-y divide-gray-100 font-medium text-gray-800">
                 {filteredStores.map((t) => {
                   const status = storeStatuses[t.id] || 'active'
-                  const storeProdCount = products.filter((p) => p.tenantId === t.id).length
+                  const storeProdCount = (Array.isArray(products) ? products : []).filter((p) => p && p.tenantId === t.id).length
                   const stats = getStoreQuickStats(t)
 
                   return (
@@ -277,7 +283,7 @@ export default function SuperAdminDashboard() {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           <img
-                            src={t.logo}
+                            src={t.logo || 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=120&auto=format&fit=crop&q=80'}
                             alt={t.name}
                             className="w-10 h-10 rounded-xl object-cover border border-gray-200 shrink-0"
                           />
@@ -305,7 +311,7 @@ export default function SuperAdminDashboard() {
                       {/* Customer Footfall */}
                       <td className="py-3 px-4">
                         <div className="font-extrabold text-amber-600 text-xs">
-                          {stats.visits.toLocaleString('en-IN')}
+                          {(Number(stats.visits) || 0).toLocaleString('en-IN')}
                         </div>
                         <div className="text-[10px] text-gray-400">Visits / mo</div>
                       </td>
@@ -367,4 +373,3 @@ export default function SuperAdminDashboard() {
     </div>
   )
 }
-
