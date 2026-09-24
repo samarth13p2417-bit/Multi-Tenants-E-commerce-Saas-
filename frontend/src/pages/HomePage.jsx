@@ -8,6 +8,7 @@ import MarketplaceNavbar from '../components/MarketplaceNavbar'
 import CartDrawer from '../components/CartDrawer'
 import TenantCard from '../components/TenantCard'
 import ProductCard from '../components/ProductCard'
+import ThemeSelectorSection from '../components/ThemeSelectorSection'
 import {
   Store,
   Layers,
@@ -99,7 +100,7 @@ export default function HomePage() {
   }, [tenants])
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-white dark:bg-[#090d16] text-gray-900 dark:text-gray-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white transition-colors duration-300">
       
       {/* Top Marketplace Navigation */}
       <MarketplaceNavbar />
@@ -110,43 +111,43 @@ export default function HomePage() {
       <main className="flex-1">
         
         {/* ================= 1. HERO SECTION ================= */}
-        <section className="border-b border-gray-100 bg-gradient-to-b from-gray-50/90 via-white to-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <section className="border-b border-gray-100 dark:border-gray-800/80 bg-gradient-to-b from-gray-50/90 via-white to-white dark:from-gray-900/80 dark:via-[#090d16] dark:to-[#090d16] py-12 sm:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
           <div className="max-w-7xl mx-auto text-center relative z-10">
             
             {/* Ecosystem Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-black mb-6 shadow-2xs">
-              <Sparkles className="w-4 h-4 text-blue-600" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 text-xs font-black mb-6 shadow-2xs">
+              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <span>Multi-Tenant Commerce &amp; Dining Network</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight max-w-5xl mx-auto leading-tight sm:leading-tight">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white tracking-tight max-w-5xl mx-auto leading-tight sm:leading-tight">
               One Unified Marketplace.{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 dark:from-blue-400 dark:via-indigo-300 dark:to-cyan-400">
                 Top Independent Brands.
               </span>
               <br className="hidden sm:inline" /> 100% Safe Shopping for Everyone.
             </h1>
 
-            <p className="text-sm sm:text-base text-gray-600 max-w-3xl mx-auto mt-4 leading-relaxed">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mt-4 leading-relaxed">
               Explore <strong>37+ verified local merchants &amp; restaurants</strong> — from <strong>Electronics &amp; Gadgets</strong>, <strong>Fashion &amp; Garments</strong> to <strong>Momos, Sweets, Tours &amp; Travels</strong> with dedicated store carts.
             </p>
 
             {/* Quick Feature Metric Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-8 text-xs font-bold text-gray-700">
-              <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-2xl border border-gray-200 shadow-2xs">
-                <Store className="w-4 h-4 text-blue-600" />
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-8 text-xs font-bold text-gray-700 dark:text-gray-300">
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3.5 py-2 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xs">
+                <Store className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <span>37+ Verified Merchant Stores</span>
               </div>
-              <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-2xl border border-gray-200 shadow-2xs">
-                <ShoppingBag className="w-4 h-4 text-emerald-600" />
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3.5 py-2 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xs">
+                <ShoppingBag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Dedicated Store Carts &amp; Bags</span>
               </div>
-              <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-2xl border border-gray-200 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3.5 py-2 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xs">
                 <Zap className="w-4 h-4 text-amber-500" />
                 <span>30-Min Fast Dispatch</span>
               </div>
-              <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-2xl border border-gray-200 shadow-2xs">
-                <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3.5 py-2 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-2xs">
+                <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span>100% Genuine Buyer Protection</span>
               </div>
             </div>
@@ -155,25 +156,25 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto mt-10 text-left">
               
               {/* Pillar 1: For Customers */}
-              <div className="bg-white p-6 rounded-3xl border border-emerald-200/80 shadow-xs hover:shadow-md transition relative overflow-hidden group">
+              <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-emerald-200/80 dark:border-emerald-900/60 shadow-xs hover:shadow-md transition relative overflow-hidden group">
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
-                      <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                    <span className="p-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-xl">
+                      <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     </span>
                     <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">For Customers</span>
-                      <h3 className="text-base font-bold text-gray-900">100% Safe &amp; Verified Shopping</h3>
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">For Customers</span>
+                      <h3 className="text-base font-bold text-gray-900 dark:text-white">100% Safe &amp; Verified Shopping</h3>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed mb-4">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                     Shop genuine products with official brand warranties, verified merchant authentications, and buyer protection guarantee across all stores.
                   </p>
-                  <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-emerald-800">
-                    <span className="flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                  <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                    <span className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
                       <CheckCircle2 className="w-3.5 h-3.5" /> 100% Verified Stores
                     </span>
-                    <span className="flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                    <span className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
                       <Lock className="w-3.5 h-3.5" /> Zero-Fraud Checkout
                     </span>
                   </div>
@@ -181,29 +182,29 @@ export default function HomePage() {
               </div>
 
               {/* Pillar 2: For Store Owners */}
-              <div className="bg-white p-6 rounded-3xl border border-blue-200/80 shadow-xs hover:shadow-md transition relative overflow-hidden group">
+              <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl border border-blue-200/80 dark:border-blue-900/60 shadow-xs hover:shadow-md transition relative overflow-hidden group">
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="p-2 bg-blue-100 text-blue-800 rounded-xl">
-                      <TrendingUp className="w-5 h-5 text-blue-600" />
+                    <span className="p-2 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 rounded-xl">
+                      <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </span>
                     <div>
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-700">For Store Owners</span>
-                      <h3 className="text-base font-bold text-gray-900">Manage Inventory &amp; Live Sales</h3>
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-400">For Store Owners</span>
+                      <h3 className="text-base font-bold text-gray-900 dark:text-white">Manage Inventory &amp; Live Sales</h3>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-600 leading-relaxed mb-4">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                     Store owners can log in with Phone &amp; OTP or Email to manage product pricing, stock units left, and view sales revenue charts.
                   </p>
                   <div className="flex items-center gap-3">
                     <Link
                       to="/login"
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
                     >
                       <span>Vendor Portal &amp; Analytics</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
-                    <Link to="/register-store" className="text-[11px] text-gray-500 hover:text-gray-800 font-semibold">
+                    <Link to="/register-store" className="text-[11px] text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-semibold">
                       Register Store
                     </Link>
                   </div>
@@ -215,20 +216,23 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ================= 2. FEATURED TRENDING PRODUCTS ================= */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-gray-100">
+        {/* ================= 2. THEME & APPEARANCE SELECTION SECTION ================= */}
+        <ThemeSelectorSection />
+
+        {/* ================= 3. FEATURED TRENDING PRODUCTS ================= */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-b border-gray-100 dark:border-gray-800/80">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-2 mb-6">
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Marketplace Highlights</span>
                 </span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mt-1">
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight mt-1">
                 Trending Bestsellers Across All Stores
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                 Top rated items with real-time stock availability and instant merchant fulfillment.
               </p>
             </div>
@@ -241,18 +245,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ================= 3. ALL STOREFRONTS BY CATEGORY ================= */}
+        {/* ================= 4. ALL STOREFRONTS BY CATEGORY ================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           
           {/* If single tenant is filtered */}
           {selectedTenantId !== 'all' ? (
             <div>
-              <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200 dark:border-gray-800">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-gray-900">
+                  <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">
                     Selected Merchant Storefront
                   </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     Showing {displayedTenants.length} verified merchant storefront
                   </p>
                 </div>
@@ -260,7 +264,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => dispatch(setSelectedTenant('all'))}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-semibold text-gray-700 transition cursor-pointer"
+                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-300 transition cursor-pointer"
                 >
                   Show All Stores
                 </button>
@@ -279,17 +283,17 @@ export default function HomePage() {
                 <div key={group.id} className="pt-2">
                   
                   {/* Category Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6 pb-3 border-b border-gray-200">
+                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-6 pb-3 border-b border-gray-200 dark:border-gray-800">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+                        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                           {group.title}
                         </h2>
-                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                           {group.stores.length} Store{group.stores.length !== 1 ? 's' : ''}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         {group.subtitle}
                       </p>
                     </div>
@@ -311,57 +315,57 @@ export default function HomePage() {
 
       </main>
 
-      {/* ================= 4. CLEAN FOOTER ================= */}
-      <footer className="border-t border-gray-200 bg-white py-12 px-4 sm:px-6 lg:px-8 text-xs text-gray-500">
+      {/* ================= 5. CLEAN FOOTER ================= */}
+      <footer className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#090d16] py-12 px-4 sm:px-6 lg:px-8 text-xs text-gray-500 dark:text-gray-400 transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
           
           <div className="col-span-2">
-            <div className="flex items-center gap-2 font-bold text-gray-900 text-base mb-2">
-              <div className="w-7 h-7 rounded-lg bg-gray-900 flex items-center justify-center text-white text-xs">
-                <Layers className="w-4 h-4 text-blue-400" />
+            <div className="flex items-center gap-2 font-bold text-gray-900 dark:text-white text-base mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gray-900 dark:bg-blue-600 flex items-center justify-center text-white text-xs">
+                <Layers className="w-4 h-4 text-blue-400 dark:text-white" />
               </div>
               <span>OmniMarket Multi-Tenant</span>
             </div>
-            <p className="text-xs text-gray-500 max-w-sm leading-relaxed">
+            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed">
               India's premier multi-tenant commerce network connecting shoppers with verified independent stores and restaurants under a 100% safe shopping guarantee.
             </p>
           </div>
 
           <div>
-            <h4 className="font-bold text-gray-900 mb-3 uppercase tracking-wider text-[11px]">Stores &amp; Categories</h4>
+            <h4 className="font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wider text-[11px]">Stores &amp; Categories</h4>
             <ul className="space-y-1.5 text-xs">
-              <li><span className="text-gray-700 font-medium">🥟 Food, Momos &amp; Sweets</span></li>
-              <li><span className="text-gray-700 font-medium">🚌 Tours &amp; Travels</span></li>
-              <li><span className="text-gray-700 font-medium">👗 Fashion &amp; Ethnic Wear</span></li>
-              <li><span className="text-gray-700 font-medium">📱 Smartphones &amp; Gadgets</span></li>
-              <li><span className="text-gray-700 font-medium">⚡ Electronics &amp; Appliances</span></li>
-              <li><span className="text-gray-700 font-medium">🛋️ Furniture &amp; Sewing Tools</span></li>
-              <li><span className="text-gray-700 font-medium">🛒 Grocery &amp; Supermarket</span></li>
+              <li><span className="text-gray-700 dark:text-gray-300 font-medium">🥟 Food, Momos &amp; Sweets</span></li>
+              <li><span className="text-gray-700 dark:text-gray-300 font-medium">🚌 Tours &amp; Travels</span></li>
+              <li><span className="text-gray-700 dark:text-gray-300 font-medium">👗 Fashion &amp; Ethnic Wear</span></li>
+              <li><span className="text-gray-700 dark:text-gray-300 font-medium">📱 Smartphones &amp; Gadgets</span></li>
+              <li><span className="text-gray-700 dark:text-gray-300 font-medium">⚡ Electronics &amp; Appliances</span></li>
+              <li><span className="text-gray-700 dark:text-gray-300 font-medium">🛋️ Furniture &amp; Sewing Tools</span></li>
+              <li><span className="text-gray-700 dark:text-gray-300 font-medium">🛒 Grocery &amp; Supermarket</span></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-gray-900 mb-3 uppercase tracking-wider text-[11px]">For Businesses &amp; Admins</h4>
+            <h4 className="font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wider text-[11px]">For Businesses &amp; Admins</h4>
             <ul className="space-y-2">
-              <li><Link to="/login" className="hover:text-gray-900 transition font-semibold text-blue-600">Store Owner &amp; Vendor Portal</Link></li>
-              <li><Link to="/vendor-dashboard" className="hover:text-gray-900 transition">Vendor Analytics Dashboard</Link></li>
-              <li><Link to="/login" className="hover:text-gray-900 transition">Super Admin Master Vault</Link></li>
-              <li><Link to="/register-store" className="hover:text-gray-900 transition">Register New Store</Link></li>
+              <li><Link to="/login" className="hover:text-gray-900 dark:hover:text-white transition font-semibold text-blue-600 dark:text-blue-400">Store Owner &amp; Vendor Portal</Link></li>
+              <li><Link to="/vendor-dashboard" className="hover:text-gray-900 dark:hover:text-white transition">Vendor Analytics Dashboard</Link></li>
+              <li><Link to="/login" className="hover:text-gray-900 dark:hover:text-white transition">Super Admin Master Vault</Link></li>
+              <li><Link to="/register-store" className="hover:text-gray-900 dark:hover:text-white transition">Register New Store</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-gray-900 mb-3 uppercase tracking-wider text-[11px]">Safety &amp; Trust</h4>
+            <h4 className="font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-wider text-[11px]">Safety &amp; Trust</h4>
             <ul className="space-y-2">
-              <li><span className="text-emerald-700 font-semibold flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> 100% Safe Shopping</span></li>
-              <li><span className="text-gray-600">Genuine Product Guarantee</span></li>
-              <li><span className="text-gray-600">Privacy &amp; SSL Protection</span></li>
+              <li><span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> 100% Safe Shopping</span></li>
+              <li><span className="text-gray-600 dark:text-gray-400">Genuine Product Guarantee</span></li>
+              <li><span className="text-gray-600 dark:text-gray-400">Privacy &amp; SSL Protection</span></li>
             </ul>
           </div>
 
         </div>
 
-        <div className="max-w-7xl mx-auto pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
+        <div className="max-w-7xl mx-auto pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
           <div>© 2026 OmniMarket Multi-Tenant Ecosystem. 100% Safe Shopping Guaranteed.</div>
           <div className="flex items-center gap-4 font-medium">
             <span>Powered by React, Redux Toolkit &amp; Tailwind CSS</span>

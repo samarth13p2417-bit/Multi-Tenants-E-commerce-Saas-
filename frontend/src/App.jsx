@@ -73,7 +73,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <div className="min-h-screen bg-white font-sans antialiased text-gray-900">
+        <div className="min-h-screen bg-white dark:bg-[#090d16] font-sans antialiased text-gray-900 dark:text-gray-100 transition-colors duration-200">
           {/* Global Customer Pocket / Digital Wallet Modal */}
           <PocketModal />
 

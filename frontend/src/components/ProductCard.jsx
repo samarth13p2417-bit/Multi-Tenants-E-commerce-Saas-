@@ -1,7 +1,7 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { addToCart, setSelectedTenant } from '../features/marketplace/marketplaceSlice'
-import { Star, ShoppingBag, Store, AlertTriangle, Check } from 'lucide-react'
+import { Star, ShoppingBag, Store, AlertTriangle } from 'lucide-react'
 
 export default function ProductCard({ product }) {
   const dispatch = useDispatch()
@@ -27,12 +27,14 @@ export default function ProductCard({ product }) {
   const isStoreOwner = loggedInUser?.role === 'vendor' && loggedInUser?.storeId === product.tenantId
 
   return (
-    <div className={`group bg-white rounded-2xl border overflow-hidden transition-all duration-200 flex flex-col justify-between relative ${
-      isOutOfStock ? 'border-gray-200 opacity-80' : 'border-gray-200 hover:shadow-lg hover:border-gray-300'
+    <div className={`group bg-white dark:bg-gray-900 rounded-2xl border overflow-hidden transition-all duration-200 flex flex-col justify-between relative ${
+      isOutOfStock
+        ? 'border-gray-200 dark:border-gray-800 opacity-80'
+        : 'border-gray-200 dark:border-gray-800 hover:shadow-lg dark:hover:shadow-blue-950/20 hover:border-gray-300 dark:hover:border-gray-700'
     }`}>
       
       {/* Product Image Area */}
-      <div className="relative aspect-square w-full bg-gray-50 overflow-hidden">
+      <div className="relative aspect-square w-full bg-gray-50 dark:bg-gray-800 overflow-hidden">
         <img
           src={product.image}
           alt={product.name}
@@ -59,7 +61,7 @@ export default function ProductCard({ product }) {
             <span>Only {product.stockCount} left!</span>
           </div>
         ) : product.tag ? (
-          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[11px] font-bold text-gray-900 shadow-xs border border-gray-200">
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/95 dark:bg-gray-900/90 backdrop-blur-xs text-[11px] font-bold text-gray-900 dark:text-white shadow-xs border border-gray-200 dark:border-gray-700">
             {product.tag}
           </div>
         ) : null}
@@ -69,7 +71,7 @@ export default function ProductCard({ product }) {
           <button
             type="button"
             onClick={handleAddToCart}
-            className="absolute bottom-3 right-3 p-2.5 rounded-xl bg-white/95 hover:bg-gray-900 text-gray-900 hover:text-white shadow-md border border-gray-200 transition duration-150 cursor-pointer"
+            className="absolute bottom-3 right-3 p-2.5 rounded-xl bg-white/95 dark:bg-gray-900/95 hover:bg-gray-900 hover:text-white dark:hover:bg-blue-600 text-gray-900 dark:text-white shadow-md border border-gray-200 dark:border-gray-700 transition duration-150 cursor-pointer"
             title="Add to Unified Cart"
           >
             <ShoppingBag className="w-4 h-4" />
@@ -84,22 +86,22 @@ export default function ProductCard({ product }) {
           <button
             type="button"
             onClick={handleTenantClick}
-            className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline mb-1.5 group/tenant cursor-pointer text-left"
+            className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline mb-1.5 group/tenant cursor-pointer text-left"
           >
-            <Store className="w-3 h-3 text-blue-500 shrink-0" />
+            <Store className="w-3 h-3 text-blue-500 dark:text-blue-400 shrink-0" />
             <span className="truncate">{tenant ? tenant.name : product.tenantName}</span>
           </button>
 
           {/* Product Title */}
-          <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
             {product.name}
           </h3>
 
           {/* Rating */}
-          <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
+          <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center text-amber-500">
               <Star className="w-3.5 h-3.5 fill-amber-400" />
-              <span className="font-bold text-gray-800 ml-1">{product.rating}</span>
+              <span className="font-bold text-gray-800 dark:text-gray-200 ml-1">{product.rating}</span>
             </div>
             <span>•</span>
             <span className="text-[11px]">({product.reviewsCount} reviews)</span>
@@ -107,20 +109,20 @@ export default function ProductCard({ product }) {
 
           {/* Private Merchant Stock Indicator (Only for logged-in Store Owner) */}
           {isStoreOwner && (
-            <div className="mt-2 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
+            <div className="mt-2 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
               <span>👑 Store Owner Stock: {product.stockCount ?? 15} units</span>
             </div>
           )}
         </div>
 
         {/* Price & Add to Cart */}
-        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <div>
-            <div className="text-base font-extrabold text-gray-900">
+            <div className="text-base font-extrabold text-gray-900 dark:text-white">
               ₹{product.price.toLocaleString('en-IN')}
             </div>
             {product.originalPrice && (
-              <div className="text-xs text-gray-400 line-through">
+              <div className="text-xs text-gray-400 dark:text-gray-500 line-through">
                 ₹{product.originalPrice.toLocaleString('en-IN')}
               </div>
             )}
@@ -130,7 +132,7 @@ export default function ProductCard({ product }) {
             <button
               type="button"
               disabled
-              className="px-3 py-1.5 rounded-xl bg-gray-100 text-gray-400 text-xs font-semibold cursor-not-allowed border border-gray-200"
+              className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 text-xs font-semibold cursor-not-allowed border border-gray-200 dark:border-gray-700"
             >
               Out of Stock
             </button>
@@ -138,7 +140,7 @@ export default function ProductCard({ product }) {
             <button
               type="button"
               onClick={handleAddToCart}
-              className="px-3.5 py-1.5 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
             >
               <span>Add</span>
               <ShoppingBag className="w-3 h-3" />
