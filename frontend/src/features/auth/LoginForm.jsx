@@ -133,22 +133,22 @@ export default function LoginForm() {
     return () => clearInterval(interval)
   }, [adminOtpStep, adminResendTimer])
 
-  // Auto redirect on successful login
+  // Auto redirect on successful login / registration
   useEffect(() => {
     let timer
     if (loggedInUser) {
       if (loggedInUser.role === 'customer') {
         timer = setTimeout(() => {
           navigate('/')
-        }, 1800)
+        }, 700)
       } else if (loggedInUser.role === 'vendor' && loggedInUser.storeId) {
         timer = setTimeout(() => {
           navigate('/vendor-dashboard')
-        }, 1800)
+        }, 700)
       } else if (loggedInUser.role === 'super_admin') {
         timer = setTimeout(() => {
           navigate('/super-admin')
-        }, 1800)
+        }, 700)
       }
     }
     return () => clearTimeout(timer)
